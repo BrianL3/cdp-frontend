@@ -1,0 +1,29 @@
+import { action } from "@storybook/addon-actions";
+import { text, array } from "@storybook/addon-knobs";
+import { Meta, Props, Story } from "@storybook/addon-docs/blocks";
+
+import FooterLayout from "./FooterLayout";
+
+<Meta title="Library/Layout/Footer" component={FooterLayout} />
+
+# FooterLayout
+
+### Displays Footer
+
+<Props of={FooterLayout} />
+
+<Story name="CDP-Footer">
+  <FooterLayout
+    headers={[
+      {
+        headerName: "example",
+        links: [{
+          label: "Link 1",
+          url: "www.google.com"
+        }]
+      }
+    ]}
+    about="About"
+    aboutLinkDestination="www.google.com"
+  />
+</Story>
