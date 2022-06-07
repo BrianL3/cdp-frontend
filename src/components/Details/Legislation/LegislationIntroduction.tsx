@@ -25,10 +25,6 @@ const LegislationIntroduction: FC<LegislationIntroductionProps> = ({
           marginBottom: 12,
         }}
       >
-        <DecisionResult
-          result={matterStatus.status}
-          style={{ display: "flex", alignItems: "center", flex: 0, whiteSpace: "nowrap" }}
-        />
         <div
           style={{
             display: "flex",
