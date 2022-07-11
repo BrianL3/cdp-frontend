@@ -6,6 +6,7 @@ import { Modal } from "semantic-ui-react";
 import { TimePointActionType, timePointReducer, initialTimePoint } from "./state";
 import { timePointToSeconds } from "./utils";
 import ShareIcon from "../../../Shared/ShareIcon";
+import CDPModal from "../../../Shared/util/CDPModal";
 
 import colors from "../../../../styles/colors";
 
@@ -61,19 +62,6 @@ const TimePointInput = styled.input<{ disabled: boolean }>((props) => ({
   borderBottomWidth: "1.5px",
   width: 64,
 }));
-
-const ShareVideoModal = styled(Modal)({
-  "i.close.icon": {
-    // move close icon inside modal
-    top: 0,
-    right: 0,
-    color: "black",
-  },
-  "i.close::before": {
-    // change icon to ✖
-    content: '"\u2716"',
-  },
-});
 
 interface ShareVideoProps {
   sessionIndex: number;
@@ -157,7 +145,7 @@ const ShareVideo: FC<ShareVideoProps> = ({ sessionIndex, getCurrentTime }: Share
 
   return (
     <>
-      <ShareVideoModal
+      <CDPModal
         closeIcon
         trigger={
           <ShareBtn className="mzp-c-button mzp-t-secondary" onClick={handleOpen}>
@@ -197,7 +185,7 @@ const ShareVideo: FC<ShareVideoProps> = ({ sessionIndex, getCurrentTime }: Share
             />
           </TimePoint>
         </Modal.Content>
-      </ShareVideoModal>
+      </CDPModal>
       <div ref={mountNodeRef} />
     </>
   );

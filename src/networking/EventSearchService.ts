@@ -1,6 +1,3 @@
-import { removeStopwords } from "stopword";
-import { nGram } from "n-gram";
-import { stem } from "stemr";
 import IndexedEventGram from "../models/IndexedEventGram";
 import IndexedEventGramService from "./IndexedEventGramService";
 import { NetworkService } from "./NetworkService";
@@ -10,8 +7,8 @@ import { sumBy, maxBy } from "lodash";
 import EventService from "./EventService";
 import Event from "../models/Event";
 import { createError } from "../utils/createError";
+import { getStemmedGrams } from "./util/getStemmedGrams";
 import { FirebaseConfig } from "../app/AppConfigContext";
-import cleanText from "../utils/cleanText";
 
 /**
  * The primary return of searchEvents.
@@ -70,44 +67,6 @@ export default class EventSearchService {
   }
 
   /**
-   * cleanText function is almost a mirror of the `clean_text` function from
-   * cdp-backend Python. Only major difference is there is no boolean parameter
-   * for indicating if we want to clean stopwords, this function is only currently
-   * used for searching and thus should always clean stopwords.
-   *
-   * Removes punctuation, line breaks, tabs, special character strings, stopwords,
-   * and any extra spaces in string (2+ spaces become 1 space).
-   *
-   * Returns as an array of string instead of string to pass into ngrams
-   */
-  cleanText(query: string): string[] {
-    const cleanedQuery = cleanText(query);
-    // Remove stopwords
-    // Return as list of terms
-    return removeStopwords(cleanedQuery.split(" "));
-  }
-
-  getStemmedGrams(query: string): string[] {
-    const cleanedQuery = this.cleanText(query);
-    const stemmedGrams: string[] = [];
-    Array.from([1, 2, 3]).forEach((nGramSize) => {
-      const allGrams: string[][] = nGram(nGramSize)(cleanedQuery);
-      allGrams.forEach((gramSet) => {
-        stemmedGrams.push(
-          gramSet
-            .map((gram) => {
-              return stem(gram);
-            })
-            .join(" ")
-            .toLowerCase()
-        );
-      });
-    });
-
-    return stemmedGrams;
-  }
-
-  /**
    * searchEvents will break a query into it's gram parts (and of multiple gram sizes),
    * query the database for matching events, and compile the results into an array of
    * MatchingEvent objects that can be used for later full event information display.
@@ -117,7 +76,7 @@ export default class EventSearchService {
    */
   async searchEvents(query: string): Promise<MatchingEvent[]> {
     // Clean and stem the query into all ngram sizes
-    const allStemmedGramsFromQuery = this.getStemmedGrams(query);
+    const allStemmedGramsFromQuery = getStemmedGrams(query);
 
     // Initiate all queries to database
     const allGramSearchPromises = allStemmedGramsFromQuery.map((stemmedGram) =>
