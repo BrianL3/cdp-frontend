@@ -1,9 +1,13 @@
 import React, { FC, useRef, useReducer, ChangeEvent, useCallback, KeyboardEvent } from "react";
 import styled from "@emotion/styled";
-import { Modal } from "semantic-ui-react";
+import { useParams } from "react-router-dom";
+import { Form, Modal, Radio } from "semantic-ui-react";
 
+import { useAppConfigContext } from "../../../../app";
 import { TimePointActionType, timePointReducer, initialTimePoint } from "./state";
 import DownloadIcon from "../../../Shared/DownloadIcon";
+import FunctionsCallerService from "../../../../networking/FunctionsCallerService";
+import { sortedLastIndex } from "lodash";
 
 const DownloadBtn = styled.button({
   display: "flex",
@@ -50,14 +54,15 @@ const DownloadVideoModal = styled(Modal)({
 });
 
 interface DownloadVideoProps {
-  sessionIndex: number;
+  sessionId: number;
   getCurrentTime(): number;
 }
 
-const DownloadVideo: FC<DownloadVideoProps> = ({
-  sessionIndex,
-  getCurrentTime,
-}: DownloadVideoProps) => {
+const DownloadVideo: FC<DownloadVideoProps> = ({ getCurrentTime }: DownloadVideoProps) => {
+  // the event id
+  const { id } = useParams<{ id: string }>();
+  // used for the creation of the function caller service
+  const { firebaseConfig } = useAppConfigContext();
   // A reference to the html element where the modal is mounted
   const mountNodeRef = useRef<HTMLDivElement>(null);
   // A reference to the time point input html element
@@ -80,8 +85,17 @@ const DownloadVideo: FC<DownloadVideoProps> = ({
 
   const onCreateDownloadLink = async () => {
     // get the inputs (start and end times), feed them to firebase function
-    console.log(`Download Pressed ${timePointState.startValue} - ${timePointState.endValue}`);
-    //TODO: call firebase function that creates video clip, await, deliver link?
+    console.log(
+      `Download Pressed ${timePointState.startValue} - ${timePointState.endValue}, event ID ${id}`
+    );
+    const functionCallerService = new FunctionsCallerService(firebaseConfig);
+    // set loading state
+    const url = await functionCallerService.getClip(
+      timePointState.startValue,
+      timePointState.endValue,
+      id,
+      timePointState.format
+    );
   };
 
   // Callback to handle starting time point value changes
@@ -92,6 +106,11 @@ const DownloadVideo: FC<DownloadVideoProps> = ({
   // Callback to handle ending time point value changes
   const onEndTimePointInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     timePointDispatch({ type: TimePointActionType.UPDATE_END, payload: e.target.value });
+  };
+
+  // callback to handle format change
+  const onChangeRadio = (e: React.FormEvent<HTMLInputElement>, data: any): void => {
+    timePointDispatch({ type: TimePointActionType.UPDATE_FORMAT, payload: data.value });
   };
 
   // Callback to handle when the time point input html element becomes out of focus
@@ -149,6 +168,27 @@ const DownloadVideo: FC<DownloadVideoProps> = ({
               ref={timePointInputRef}
             />
           </TimePoint>
+          <Form>
+            <Form.Field>Format</Form.Field>
+            <Form.Field>
+              <Radio
+                label="Video"
+                name="radioGroup"
+                value="mp4"
+                checked={timePointState.format === "mp4"}
+                onChange={onChangeRadio}
+              />
+            </Form.Field>
+            <Form.Field>
+              <Radio
+                label="Audio"
+                name="radioGroup"
+                value="mp3"
+                checked={timePointState.format === "mp3"}
+                onChange={onChangeRadio}
+              />
+            </Form.Field>
+          </Form>
         </Modal.Content>
       </DownloadVideoModal>
       <div ref={mountNodeRef} />

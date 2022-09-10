@@ -9,6 +9,8 @@ export interface TimePointState {
   isActive: boolean;
   /** Is the the modal open? */
   isOpen: boolean;
+  /** What format does the user want the clip in? */
+  format: string;
 }
 
 export enum TimePointActionType {
@@ -17,6 +19,7 @@ export enum TimePointActionType {
   VALIDATE_VALUES,
   OPEN,
   CLOSE,
+  UPDATE_FORMAT,
 }
 
 export type TimePointAction =
@@ -25,26 +28,34 @@ export type TimePointAction =
   // The payload is for `isActive`
   | { type: TimePointActionType.VALIDATE_VALUES; payload?: boolean }
   | { type: TimePointActionType.OPEN; payload: number }
-  | { type: TimePointActionType.CLOSE };
+  | { type: TimePointActionType.CLOSE }
+  | { type: TimePointActionType.UPDATE_FORMAT; payload: string };
 
 export const initialTimePoint = {
   startValue: "",
   endValue: "",
   isActive: false,
   isOpen: false,
+  format: "mp4",
 };
 
 export const timePointReducer = (state: TimePointState, action: TimePointAction) => {
   switch (action.type) {
     case TimePointActionType.UPDATE_START: {
-      return { ...state, value: action.payload };
+      return { ...state, startValue: action.payload };
     }
     case TimePointActionType.UPDATE_END: {
-      return { ...state, value: action.payload };
+      return { ...state, endValue: action.payload };
+    }
+    case TimePointActionType.UPDATE_FORMAT: {
+      return { ...state, format: action.payload };
     }
     case TimePointActionType.VALIDATE_VALUES: {
-      const newStart = secondsToTimePointStr(timePointToSeconds(state.startValue));
-      const newEnd = secondsToTimePointStr(timePointToSeconds(state.endValue));
+      let startValue = timePointToSeconds(state.startValue);
+      const endValue = timePointToSeconds(state.endValue);
+      if (startValue > endValue) startValue = endValue - 1;
+      const newStart = secondsToTimePointStr(startValue);
+      const newEnd = secondsToTimePointStr(endValue);
       return action.payload
         ? {
             ...state,

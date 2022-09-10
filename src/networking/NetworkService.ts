@@ -23,6 +23,7 @@ import {
   NoDocumentsError,
 } from "./NetworkResponse";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { getFunctions, Functions, httpsCallable } from "firebase/functions";
 import {
   PopulationOptions,
   Populate,
@@ -30,10 +31,13 @@ import {
   getCollectionForReference,
 } from "./PopulationOptions";
 import { createError } from "../utils/createError";
+import { FIREBASE_FUNCTION } from "./functions/FirebaseFunctions";
 
 export class NetworkService {
   private static instance: NetworkService;
   private static db: Firestore;
+  private static functions: Functions;
+
   /**
    * The NetworkService's constructor should always be private to prevent direct
    * construction calls with the `new` operator.
@@ -43,6 +47,7 @@ export class NetworkService {
     const firebaseApp = initializeApp(firebaseOptions);
     initializeFirestore(firebaseApp, settings);
     NetworkService.db = getFirestore();
+    NetworkService.functions = getFunctions(firebaseApp);
   }
 
   /**
@@ -84,6 +89,10 @@ export class NetworkService {
         parent.error = error;
         return Promise.resolve(parent);
       });
+  }
+
+  public getFunction(name: FIREBASE_FUNCTION) {
+    return httpsCallable(NetworkService.functions, name);
   }
 
   /**
