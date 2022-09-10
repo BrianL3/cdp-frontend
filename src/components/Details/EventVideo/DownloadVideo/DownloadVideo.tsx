@@ -7,7 +7,6 @@ import { useAppConfigContext } from "../../../../app";
 import { TimePointActionType, timePointReducer, initialTimePoint } from "./state";
 import DownloadIcon from "../../../Shared/DownloadIcon";
 import FunctionsCallerService from "../../../../networking/FunctionsCallerService";
-import { sortedLastIndex } from "lodash";
 
 const DownloadBtn = styled.button({
   display: "flex",
@@ -54,11 +53,14 @@ const DownloadVideoModal = styled(Modal)({
 });
 
 interface DownloadVideoProps {
-  sessionId: number;
+  sessionId: string;
   getCurrentTime(): number;
 }
 
-const DownloadVideo: FC<DownloadVideoProps> = ({ getCurrentTime }: DownloadVideoProps) => {
+const DownloadVideo: FC<DownloadVideoProps> = ({
+  sessionId,
+  getCurrentTime,
+}: DownloadVideoProps) => {
   // the event id
   const { id } = useParams<{ id: string }>();
   // used for the creation of the function caller service
@@ -94,8 +96,10 @@ const DownloadVideo: FC<DownloadVideoProps> = ({ getCurrentTime }: DownloadVideo
       timePointState.startValue,
       timePointState.endValue,
       id,
+      sessionId,
       timePointState.format
     );
+    timePointDispatch({ type: TimePointActionType.UPDATE_URL, payload: url });
   };
 
   // Callback to handle starting time point value changes
@@ -143,9 +147,14 @@ const DownloadVideo: FC<DownloadVideoProps> = ({ getCurrentTime }: DownloadVideo
         <Modal.Header>Create a Video Clip</Modal.Header>
         <Modal.Content>
           <button className="mzp-c-button mzp-t-secondary" onClick={onCreateDownloadLink}>
-            DOWNLOAD
+            Prepare Clip
           </button>
           <br />
+          {timePointState.generatedUrl && (
+            <a href={timePointState.generatedUrl} target="_blank" rel="noopener noreferrer">
+              Your download is ready
+            </a>
+          )}
           <TimePoint>
             <label htmlFor="download-start-time-point">Start at</label>
             <TimePointInput

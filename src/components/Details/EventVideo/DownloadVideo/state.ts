@@ -11,15 +11,18 @@ export interface TimePointState {
   isOpen: boolean;
   /** What format does the user want the clip in? */
   format: string;
+  /** url of the generated clip */
+  generatedUrl?: string;
 }
 
 export enum TimePointActionType {
   UPDATE_START,
   UPDATE_END,
+  UPDATE_FORMAT,
+  UPDATE_URL,
   VALIDATE_VALUES,
   OPEN,
   CLOSE,
-  UPDATE_FORMAT,
 }
 
 export type TimePointAction =
@@ -29,7 +32,8 @@ export type TimePointAction =
   | { type: TimePointActionType.VALIDATE_VALUES; payload?: boolean }
   | { type: TimePointActionType.OPEN; payload: number }
   | { type: TimePointActionType.CLOSE }
-  | { type: TimePointActionType.UPDATE_FORMAT; payload: string };
+  | { type: TimePointActionType.UPDATE_FORMAT; payload: string }
+  | { type: TimePointActionType.UPDATE_URL; payload: string };
 
 export const initialTimePoint = {
   startValue: "",
@@ -37,6 +41,7 @@ export const initialTimePoint = {
   isActive: false,
   isOpen: false,
   format: "mp4",
+  generatedUrl: undefined,
 };
 
 export const timePointReducer = (state: TimePointState, action: TimePointAction) => {
@@ -49,6 +54,10 @@ export const timePointReducer = (state: TimePointState, action: TimePointAction)
     }
     case TimePointActionType.UPDATE_FORMAT: {
       return { ...state, format: action.payload };
+    }
+    case TimePointActionType.UPDATE_URL: {
+      console.log(`URL state was updated: ${action.payload}`);
+      return { ...state, generatedUrl: action.payload };
     }
     case TimePointActionType.VALIDATE_VALUES: {
       let startValue = timePointToSeconds(state.startValue);

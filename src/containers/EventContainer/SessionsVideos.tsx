@@ -42,6 +42,7 @@ const SessionVideos: FC<SessionVideosProps> = ({
           key: `session_index_${i + 1}`,
           content: (
             <EventVideo
+              sessionId={session.id}
               sessionIndex={i}
               initialSeconds={i === currentSession ? initialSeconds : 0}
               uri={session.video_uri as string}

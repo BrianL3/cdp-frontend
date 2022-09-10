@@ -28,6 +28,8 @@ export interface EventVideoRef {
 }
 
 export interface EventVideoProps {
+  /**The session id that the video belongs to */
+  sessionId: string;
   /**The session index of the video */
   sessionIndex: number;
   /**The source uri of the video */
@@ -39,6 +41,7 @@ export interface EventVideoProps {
 }
 
 const EventVideo: FC<EventVideoProps> = ({
+  sessionId,
   sessionIndex,
   uri,
   componentRef,
@@ -69,7 +72,7 @@ const EventVideo: FC<EventVideoProps> = ({
   const VideoHtml = () => (
     <>
       <div style={{ display: "flex", flexDirection: "row-reverse", marginBottom: 4 }}>
-        <DownloadVideo getCurrentTime={getCurrentTime} />
+        <DownloadVideo sessionId={sessionId} getCurrentTime={getCurrentTime} />
         <ShareVideo sessionIndex={sessionIndex} getCurrentTime={getCurrentTime} />
       </div>
       <div data-vjs-player>
